@@ -59,6 +59,14 @@ async def show_items_type(type_sort, warehouse):
                 .order_by(Item.count_product.desc()))
 
 
+async def show_item(prod_name):
+    async with async_session() as session:
+        return await session.execute(
+            select(Item.product_name, Item.count_product, Item.data_add)
+            .where(Item.product_name == prod_name)
+        )
+
+
 async def calculate_str(user_id, number):
     async with async_session() as session:
         res = await session.scalar(select(User.calculate_str).where(User.tg_id == user_id))
