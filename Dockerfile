@@ -10,4 +10,4 @@ COPY . /bot
 
 WORKDIR /bot
 
-ENTRYPOINT ["python", "tg_core/core.py"]
+ENTRYPOINT ["python", "core.py"]
