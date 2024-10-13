@@ -4,7 +4,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
-import tg_core.app.keyboards as kb
+import app.keyboards as kb
 import database.requests as rq
 
 router = Router()
