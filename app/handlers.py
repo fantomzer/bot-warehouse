@@ -35,7 +35,7 @@ async def cmd_start(message: Message, state: FSMContext):
         message.from_user.first_name
     )
     await rq.del_calculate(message.from_user.id)
-    await message.answer(f'Бот-склад📦\nГлавное меню📜', reply_markup=kb.main2)
+    await message.answer(f'Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
 
 
 @router.callback_query(F.data.startswith('Назад:'))
@@ -49,31 +49,31 @@ async def cmd_start(call: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.startswith('Наклейки'))
 async def cmd_start(call: CallbackQuery):
     await call.answer('Наклейки')
-    await call.message.answer('Склад: наклейки', reply_markup=kb.stickers)
+    await call.message.edit_text('Склад: наклейки', reply_markup=kb.stickers)
 
 
 @router.callback_query(F.data.startswith('silver'))
 async def cmd_start(call: CallbackQuery):
     await call.answer('SILVER')
-    await call.message.answer('SILVER', reply_markup=kb.silver)
+    await call.message.edit_text('SILVER', reply_markup=kb.silver)
 
 
 @router.callback_query(F.data.startswith('eco'))
 async def cmd_start(call: CallbackQuery):
     await call.answer('ECO')
-    await call.message.answer('ECO', reply_markup=kb.eco)
+    await call.message.edit_text('ECO', reply_markup=kb.eco)
 
 
 @router.callback_query(F.data.startswith('expert'))
 async def cmd_start(call: CallbackQuery):
     await call.answer('EXPERT')
-    await call.message.answer('EXPERT', reply_markup=kb.expert)
+    await call.message.edit_text('EXPERT', reply_markup=kb.expert)
 
 
 @router.callback_query(F.data.startswith('Покраска'))
 async def cmd_start(call: CallbackQuery):
     await call.answer('Покраска')
-    await call.message.answer('Склад: покраска', reply_markup=kb.painting)
+    await call.message.edit_text('Склад: покраска', reply_markup=kb.painting)
 
 
 @router.message(F.text == 'Изменить кол-во')
