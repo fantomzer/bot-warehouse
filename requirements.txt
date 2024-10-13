@@ -4,3 +4,4 @@ python-dotenv~=1.0.1
 telebot~=0.0.5
 pydantic~=2.7.4
 SQLAlchemy~=2.0.31
+aiosqlite~=0.20.0
