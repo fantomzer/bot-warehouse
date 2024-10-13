@@ -1,5 +1,5 @@
 from aiogram import F, Router
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
@@ -35,12 +35,45 @@ async def cmd_start(message: Message, state: FSMContext):
         message.from_user.first_name
     )
     await rq.del_calculate(message.from_user.id)
-    await message.answer(f'Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
+    await message.answer(f'Бот-склад📦\nГлавное меню📜', reply_markup=kb.main2)
 
 
-@router.message(Command('help'))
-async def get_help(message: Message):
-    await message.answer('это команда /help', reply_markup=kb.main)
+@router.callback_query(F.data.startswith('Назад:'))
+async def cmd_start(call: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await rq.del_calculate(call.message.chat.id)
+    await call.answer('Главное меню')
+    await call.message.answer(f'Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
+
+
+@router.callback_query(F.data.startswith('Наклейки'))
+async def cmd_start(call: CallbackQuery):
+    await call.answer('Наклейки')
+    await call.message.answer('Склад: наклейки', reply_markup=kb.stickers)
+
+
+@router.callback_query(F.data.startswith('silver'))
+async def cmd_start(call: CallbackQuery):
+    await call.answer('SILVER')
+    await call.message.answer('SILVER', reply_markup=kb.silver)
+
+
+@router.callback_query(F.data.startswith('eco'))
+async def cmd_start(call: CallbackQuery):
+    await call.answer('ECO')
+    await call.message.answer('ECO', reply_markup=kb.eco)
+
+
+@router.callback_query(F.data.startswith('expert'))
+async def cmd_start(call: CallbackQuery):
+    await call.answer('EXPERT')
+    await call.message.answer('EXPERT', reply_markup=kb.expert)
+
+
+@router.callback_query(F.data.startswith('Покраска'))
+async def cmd_start(call: CallbackQuery):
+    await call.answer('Покраска')
+    await call.message.answer('Склад: покраска', reply_markup=kb.painting)
 
 
 @router.message(F.text == 'Изменить кол-во')
