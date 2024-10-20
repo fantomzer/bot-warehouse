@@ -1,7 +1,7 @@
 import datetime
 
 from database.models import async_session
-from database.models import User, Warehouse, Item
+from database.models import User, Warehouse, Item, Sticker
 from sqlalchemy import select, update, delete
 
 
@@ -67,6 +67,31 @@ async def show_item(prod_name):
         )
 
 
+async def show_sticker_line(line):
+    async with async_session() as session:
+        return await session.execute(
+            select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_count)
+            .where(Sticker.type == line)
+        )
+
+
+async def show_sticker(title, volume):
+    async with async_session() as session:
+        return await session.execute(
+            select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_count)
+            .where(Sticker.sticker_name == title)
+            .where(Sticker.sticker_volume == volume)
+        )
+
+
+async def show_all_sticker():
+    async with async_session() as session:
+        return await session.execute(
+            select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_count)
+            .order_by(Sticker.sticker_count.desc())
+        )
+
+
 async def calculate_str(user_id, number):
     async with async_session() as session:
         res = await session.scalar(select(User.calculate_str).where(User.tg_id == user_id))
@@ -107,12 +132,43 @@ async def del_calculate(user_id):
         await session.commit()
 
 
+async def volume_selection(user_id, volume):
+    async with async_session() as session:
+        res = await session.scalar(select(User.calculate_str).where(User.tg_id == user_id))
+        if res == '_':
+            await session.execute(
+                update(User)
+                .where(User.tg_id == user_id)
+                .values(calculate_str=str(volume)))
+            await session.commit()
+        elif volume == '-':
+            if len(res) != 0:
+                result_list = res.split('|')[:-1]
+                result_str = '|'.join(result_list)
+                await session.execute(
+                    update(User)
+                    .where(User.tg_id == user_id)
+                    .values(calculate_str=result_str))
+                await session.commit()
+            else:
+                raise Exception(f'Строка полностью очищена')
+        else:
+            result = res + '|' + str(volume)
+            await session.execute(
+                update(User)
+                .where(User.tg_id == user_id)
+                .values(calculate_str=result))
+            await session.commit()
+
+
 async def upgrade_item_count(product_name, number, symbol):
     async with async_session() as session:
         res = await session.scalar(select(Item.count_product).where(Item.product_name == product_name))
-        if float(number) > float(res):
-            raise ValueError(f'Число {number} не может быть больше остатка')
-        elif symbol == '-':
+
+        if symbol == '-':
+            if float(number) > float(res):
+                raise ValueError(f'Число {number} не может быть больше остатка')
+
             result = float(res) - float(number)
             await session.execute(
                 update(Item)
@@ -132,3 +188,54 @@ async def del_item(product_name):
     async with async_session() as session:
         await session.execute(delete(Item).where(Item.product_name == product_name))
         await session.commit()
+
+
+async def add_sticker(title, volume, sticker_type, product_type):
+    async with async_session() as session:
+        volume_list = volume.split('|')
+        for vol in volume_list:
+            sticker = await session.scalar(
+                select(Sticker)
+                .where(Sticker.sticker_name == title.upper())
+                .where(Sticker.sticker_volume == vol))
+
+            if not sticker:
+                session.add(Sticker(
+                    sticker_name=title.upper(),
+                    sticker_volume=vol,
+                    sticker_type=sticker_type,
+                    type=product_type
+                ))
+                await session.commit()
+
+            elif sticker:
+                raise KeyError(f'Наименование {title} {volume} уже есть в базе данных')
+
+
+async def upgrade_sticker_count(title, volume, number, symbol):
+    print(title, volume, number, symbol)
+    async with async_session() as session:
+        res = await session.scalar(
+            select(Sticker.sticker_count)
+            .where(Sticker.sticker_name == title)
+            .where(Sticker.sticker_volume == volume))
+
+        if symbol == '-':
+            if int(number) > int(res):
+                raise ValueError(f'Число {number} не может быть больше остатка')
+
+            result = int(res) - int(number)
+            await session.execute(
+                update(Sticker)
+                .where(Sticker.sticker_name == title)
+                .where(Sticker.sticker_volume == volume)
+                .values(count_product=result))
+            await session.commit()
+        elif symbol == '+':
+            result = int(res) + int(number)
+            await session.execute(
+                update(Sticker)
+                .where(Sticker.sticker_name == title)
+                .where(Sticker.sticker_volume == volume)
+                .values(sticker_count=result))
+            await session.commit()
