@@ -18,8 +18,6 @@ class AddItem(StatesGroup):
 
 class AddSticker(StatesGroup):
     title = State()
-    sticker_type = State()
-    type = State()
     volume = State()
 
 
@@ -66,46 +64,64 @@ async def cmd_start(call: CallbackQuery):
     await call.message.edit_text('Склад: наклейки', reply_markup=kb.stickers)
 
 
-@router.callback_query(F.data.startswith('silver'))
-async def cmd_start(call: CallbackQuery):
-    await call.answer('SILVER')
-    await call.message.edit_text('SILVER', reply_markup=kb.silver)
+@router.callback_query(F.data.in_(['sticker_', ]))
+async def show_sort_alphabet(callback: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await callback.answer('Показать наклейки')
+    await callback.message.edit_text(
+        '⬇️Наклейки на складе⬇️',
+        reply_markup=await kb.stickers_view('alphabet', 'замена'))
 
 
-@router.callback_query(F.data.endswith('silver'))
-async def cmd_start(call: CallbackQuery):
-    line = call.data.split(':')[0]
-    await call.answer('SILVER')
-    await call.message.edit_text('SILVER', reply_markup=await kb.show_stickers_line(line))
+# @router.callback_query(F.data.startswith('silver'))
+# async def cmd_start(call: CallbackQuery):
+#     await call.answer('SILVER')
+#     await call.message.edit_text('SILVER', reply_markup=kb.silver)
+#
+#
+# @router.callback_query(F.data.endswith('silver'))
+# async def cmd_start(call: CallbackQuery):
+#     line = call.data.split(':')[0]
+#     await call.answer('SILVER')
+#     await call.message.edit_text('SILVER', reply_markup=await kb.show_stickers_line(line))
+#
+#
+# @router.callback_query(F.data.startswith('eco'))
+# async def cmd_start(call: CallbackQuery):
+#     await call.answer('ECO')
+#     await call.message.edit_text('ECO', reply_markup=kb.eco)
+#
+#
+# @router.callback_query(F.data.endswith('eco'))
+# async def cmd_start(call: CallbackQuery):
+#     line = call.data.split(':')[0]
+#     await call.answer('ECO')
+#     await call.message.edit_text('ECO', reply_markup=await kb.show_stickers_line(line))
+#
+#
+# @router.callback_query(F.data.startswith('expert'))
+# async def cmd_start(call: CallbackQuery):
+#     await call.answer('EXPERT')
+#     await call.message.edit_text('EXPERT', reply_markup=kb.expert)
 
 
-@router.callback_query(F.data.startswith('eco'))
-async def cmd_start(call: CallbackQuery):
-    await call.answer('ECO')
-    await call.message.edit_text('ECO', reply_markup=kb.eco)
+# @router.callback_query(F.data.endswith('expert'))
+# async def cmd_start(call: CallbackQuery):
+#     line = call.data.split(':')[0]
+#     await call.answer('EXPERT')
+#     await call.message.edit_text('EXPERT', reply_markup=await kb.show_stickers_line(line))
 
 
-@router.callback_query(F.data.endswith('eco'))
-async def cmd_start(call: CallbackQuery):
-    line = call.data.split(':')[0]
-    await call.answer('ECO')
-    await call.message.edit_text('ECO', reply_markup=await kb.show_stickers_line(line))
+@router.callback_query(F.data.endswith('замена'))
+async def update_second(callback: CallbackQuery):
+    await callback.answer('Сортировка')
+    type_sort = callback.data.split(':')[0]
+    await callback.message.edit_text(
+        '⬇️Наклейки на складе⬇️',
+        reply_markup=await kb.stickers_view(type_sort, 'замена'))
 
 
-@router.callback_query(F.data.startswith('expert'))
-async def cmd_start(call: CallbackQuery):
-    await call.answer('EXPERT')
-    await call.message.edit_text('EXPERT', reply_markup=kb.expert)
-
-
-@router.callback_query(F.data.endswith('expert'))
-async def cmd_start(call: CallbackQuery):
-    line = call.data.split(':')[0]
-    await call.answer('EXPERT')
-    await call.message.edit_text('EXPERT', reply_markup=await kb.show_stickers_line(line))
-
-
-@router.callback_query(F.data.startswith('изменение_н:'))
+@router.callback_query(F.data.startswith('замена'))
 async def update_second(callback: CallbackQuery, state: FSMContext):
     title, volume = callback.data.split(':')[1], callback.data.split(':')[2]
     await state.set_state(UpdateSticker.title)
@@ -136,10 +152,10 @@ async def callback_func_two(callback: CallbackQuery, state: FSMContext):
     num_data = await rq.get_calculate(user_id)
     await state.update_data(number=num_data)
     await callback.message.edit_text(f'{num_data}ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ',
-                                     reply_markup=await kb.add_nums_two('кл_3', 'sticker'))
+                                     reply_markup=await kb.add_nums_two('кл_3', '|sticker'))
 
 
-@router.callback_query(F.data.endswith('sticker'))
+@router.callback_query(F.data.endswith('|sticker'))
 async def update_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     await callback.message.edit_text(f'Число {data["number"]} принято📝')
@@ -219,19 +235,19 @@ async def update_fourth(callback: CallbackQuery, state: FSMContext):
     await state.clear()
 
 
-@router.callback_query(F.data.startswith('warehouse'))
+@router.callback_query(F.data.startswith('items'))
 async def show_sort_alphabet(callback: CallbackQuery):
     await callback.answer('Показать наименования')
     await callback.message.edit_text(
         '⬇️Наименования на складе⬇️',
-        reply_markup=await kb.inline_nums('alphabet', 'остаток'))
+        reply_markup=await kb.items_view('alphabet', 'остаток'))
 
 
-@router.callback_query(F.data.startswith('stickers'))
-async def show_sort_alphabet(callback: CallbackQuery):
-    await callback.answer('Показать наклейки')
-    data = (await rq.show_all_sticker()).fetchall()
-    await callback.message.edit_text(f'⬇️Наклейки на складе⬇️\n{data}', reply_markup=kb.main)
+# @router.callback_query(F.data.startswith('sticker_'))
+# async def show_sort_alphabet(callback: CallbackQuery):
+#     await callback.answer('Показать наклейки')
+#     data = (await rq.show_all_sticker()).fetchall()
+#     await callback.message.edit_text(f'⬇️Наклейки на складе⬇️\n{data}', reply_markup=kb.main)
 
 
 @router.callback_query(F.data.startswith('поиск'))
@@ -253,7 +269,7 @@ async def show_sort(callback: CallbackQuery):
     type_sort = callback.data.split(':')[0]
     await callback.message.edit_text(
         '⬇️Наименования на складе⬇️',
-        reply_markup=await kb.inline_nums(type_sort, 'остаток'))
+        reply_markup=await kb.items_view(type_sort, 'остаток'))
 
 
 @router.callback_query(F.data.startswith('остаток'))
@@ -266,7 +282,7 @@ async def number(callback: CallbackQuery):
         reply_markup=await kb.item_change(item[0]))
 
 
-@router.callback_query(F.data.startswith('add_warehouse'))
+@router.callback_query(F.data.startswith('add_item'))
 async def add_first(callback: CallbackQuery, state: FSMContext):
     await callback.answer('Добавление нового наименования')
     await state.set_state(AddItem.title)
@@ -307,7 +323,7 @@ async def add_fourth(callback: CallbackQuery, state: FSMContext):
     await state.clear()
 
 
-@router.callback_query(F.data.startswith('sticker_add'))
+@router.callback_query(F.data.startswith('add_sticker'))
 async def add_first(callback: CallbackQuery, state: FSMContext):
     await callback.answer('Добавление наклейки')
     await state.set_state(AddSticker.title)
@@ -317,20 +333,6 @@ async def add_first(callback: CallbackQuery, state: FSMContext):
 @router.message(AddSticker.title)
 async def add_second(message: Message, state: FSMContext):
     await state.update_data(title=message.text)
-    await state.set_state(AddSticker.sticker_type)
-    await message.reply('⬇️Выберите тип наклейки⬇️', reply_markup=kb.set_type_sticker)
-
-
-@router.callback_query(AddSticker.sticker_type)
-async def add_third(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(sticker_type=callback.data)
-    await state.set_state(AddSticker.type)
-    await callback.message.edit_text('⬇️Введите тип линейки⬇️')
-
-
-@router.message(AddSticker.type)
-async def add_fourth(message: Message, state: FSMContext):
-    await state.update_data(type=message.text)
     await state.set_state(AddSticker.volume)
     await message.reply('⬇️Выберите объём⬇️', reply_markup=await kb.add_volume())
 
@@ -355,7 +357,7 @@ async def add_fifth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     await callback.message.edit_text(f'Наклейка {data["title"]} принята📝')
     try:
-        await rq.add_sticker(data["title"], data["volume"], data["sticker_type"], data["type"])
+        await rq.add_sticker(data["title"], data["volume"])
         await callback.message.answer(
             f'Наклейка добавлена🗂\nНазвание: {data["title"]}\nОбъемы: {data["volume"]}',
             reply_markup=kb.main)
@@ -369,7 +371,7 @@ async def add_fifth(callback: CallbackQuery, state: FSMContext):
 async def item_del(message: Message):
     await message.answer(
         '⬇️Выберите название для удаления⬇️',
-        reply_markup=await kb.inline_nums('alphabet', 'подтверждение'))
+        reply_markup=await kb.items_view('alphabet', 'подтверждение'))
 
 
 @router.callback_query(F.data.endswith('подтверждение'))
@@ -378,7 +380,7 @@ async def show_item_del(callback: CallbackQuery):
     type_sort = callback.data.split(':')[0]
     await callback.message.edit_text(
         '⬇️Выберите название для удаления⬇️',
-        reply_markup=await kb.inline_nums(type_sort, 'подтверждение'))
+        reply_markup=await kb.items_view(type_sort, 'подтверждение'))
 
 
 @router.callback_query(F.data.startswith('подтверждение'))

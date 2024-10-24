@@ -1,7 +1,7 @@
 import datetime
 
 from database.models import async_session
-from database.models import User, Warehouse, Item, Sticker
+from database.models import User, Item, Sticker
 from sqlalchemy import select, update, delete
 
 
@@ -17,7 +17,7 @@ async def set_user(tg_id, user_name, first_name):
 async def find_item(name):
     async with async_session() as session:
         return await session.execute(
-            select(Item.product_name, Item.count_product)
+            select(Item.product_name, Item.product_number)
             .where(Item.product_name.like(f'%{name.lower()}%')))
 
 
@@ -42,43 +42,43 @@ async def show_items_type(type_sort, warehouse):
     if type_sort == 'alphabet':
         async with async_session() as session:
             return await session.execute(
-                select(Item.product_name, Item.count_product)
+                select(Item.product_name, Item.product_number)
                 .where(Item.warehouse == warehouse)
                 .order_by(Item.product_name))
     elif type_sort == 'count':
         async with async_session() as session:
             return await session.execute(
-                select(Item.product_name, Item.count_product)
+                select(Item.product_name, Item.product_number)
                 .where(Item.warehouse == warehouse)
-                .order_by(Item.count_product))
+                .order_by(Item.product_number))
     elif type_sort == 'count_desc':
         async with async_session() as session:
             return await session.execute(
-                select(Item.product_name, Item.count_product)
+                select(Item.product_name, Item.product_number)
                 .where(Item.warehouse == warehouse)
-                .order_by(Item.count_product.desc()))
+                .order_by(Item.product_number.desc()))
 
 
 async def show_item(prod_name):
     async with async_session() as session:
         return await session.execute(
-            select(Item.product_name, Item.count_product, Item.data_add)
+            select(Item.product_name, Item.product_number)
             .where(Item.product_name == prod_name)
         )
 
 
-async def show_sticker_line(line):
-    async with async_session() as session:
-        return await session.execute(
-            select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_count)
-            .where(Sticker.type == line)
-        )
+# async def show_sticker_line(line):
+#     async with async_session() as session:
+#         return await session.execute(
+#             select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_count)
+#             .where(Sticker.type == line)
+#         )
 
 
 async def show_sticker(title, volume):
     async with async_session() as session:
         return await session.execute(
-            select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_count)
+            select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
             .where(Sticker.sticker_name == title)
             .where(Sticker.sticker_volume == volume)
         )
@@ -87,18 +87,36 @@ async def show_sticker(title, volume):
 async def show_all_sticker():
     async with async_session() as session:
         return await session.execute(
-            select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_count)
-            .order_by(Sticker.sticker_count.desc())
+            select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
+            .order_by(Sticker.sticker_ahead.desc())
         )
+
+
+async def show_stickers_type(type_sort):
+    if type_sort == 'alphabet':
+        async with async_session() as session:
+            return await session.execute(
+                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead, Sticker.sticker_behind)
+                .order_by(Sticker.sticker_name))
+    elif type_sort == 'count':
+        async with async_session() as session:
+            return await session.execute(
+                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead, Sticker.sticker_behind)
+                .order_by(Sticker.sticker_ahead))
+    elif type_sort == 'count_desc':
+        async with async_session() as session:
+            return await session.execute(
+                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead, Sticker.sticker_behind)
+                .order_by(Sticker.sticker_ahead.desc()))
 
 
 async def calculate_str(user_id, number):
     async with async_session() as session:
-        res = await session.scalar(select(User.calculate_str).where(User.tg_id == user_id))
+        res = await session.scalar(select(User.calculate_str).where(User.tg_id == str(user_id)))
         if res == '_':
             await session.execute(
                 update(User)
-                .where(User.tg_id == user_id)
+                .where(User.tg_id == str(user_id))
                 .values(calculate_str=number))
             await session.commit()
         elif number == '-':
@@ -106,7 +124,7 @@ async def calculate_str(user_id, number):
                 result = res[:-1]
                 await session.execute(
                     update(User)
-                    .where(User.tg_id == user_id)
+                    .where(User.tg_id == str(user_id))
                     .values(calculate_str=result))
                 await session.commit()
             else:
@@ -115,30 +133,30 @@ async def calculate_str(user_id, number):
             result = res + str(number)
             await session.execute(
                 update(User)
-                .where(User.tg_id == user_id)
+                .where(User.tg_id == str(user_id))
                 .values(calculate_str=result))
             await session.commit()
 
 
 async def get_calculate(user_id):
     async with async_session() as session:
-        res = await session.scalar(select(User.calculate_str).where(User.tg_id == user_id))
+        res = await session.scalar(select(User.calculate_str).where(User.tg_id == str(user_id)))
     return res
 
 
 async def del_calculate(user_id):
     async with async_session() as session:
-        await session.execute(update(User).where(User.tg_id == user_id).values(calculate_str='_'))
+        await session.execute(update(User).where(User.tg_id == str(user_id)).values(calculate_str='_'))
         await session.commit()
 
 
 async def volume_selection(user_id, volume):
     async with async_session() as session:
-        res = await session.scalar(select(User.calculate_str).where(User.tg_id == user_id))
+        res = await session.scalar(select(User.calculate_str).where(User.tg_id == str(user_id)))
         if res == '_':
             await session.execute(
                 update(User)
-                .where(User.tg_id == user_id)
+                .where(User.tg_id == str(user_id))
                 .values(calculate_str=str(volume)))
             await session.commit()
         elif volume == '-':
@@ -147,7 +165,7 @@ async def volume_selection(user_id, volume):
                 result_str = '|'.join(result_list)
                 await session.execute(
                     update(User)
-                    .where(User.tg_id == user_id)
+                    .where(User.tg_id == str(user_id))
                     .values(calculate_str=result_str))
                 await session.commit()
             else:
@@ -156,14 +174,14 @@ async def volume_selection(user_id, volume):
             result = res + '|' + str(volume)
             await session.execute(
                 update(User)
-                .where(User.tg_id == user_id)
+                .where(User.tg_id == str(user_id))
                 .values(calculate_str=result))
             await session.commit()
 
 
 async def upgrade_item_count(product_name, number, symbol):
     async with async_session() as session:
-        res = await session.scalar(select(Item.count_product).where(Item.product_name == product_name))
+        res = await session.scalar(select(Item.product_number).where(Item.product_name == product_name))
 
         if symbol == '-':
             if float(number) > float(res):
@@ -190,7 +208,7 @@ async def del_item(product_name):
         await session.commit()
 
 
-async def add_sticker(title, volume, sticker_type, product_type):
+async def add_sticker(title, volume):
     async with async_session() as session:
         volume_list = volume.split('|')
         for vol in volume_list:
@@ -202,9 +220,7 @@ async def add_sticker(title, volume, sticker_type, product_type):
             if not sticker:
                 session.add(Sticker(
                     sticker_name=title.upper(),
-                    sticker_volume=vol,
-                    sticker_type=sticker_type,
-                    type=product_type
+                    sticker_volume=vol
                 ))
                 await session.commit()
 
@@ -216,7 +232,7 @@ async def upgrade_sticker_count(title, volume, number, symbol):
     print(title, volume, number, symbol)
     async with async_session() as session:
         res = await session.scalar(
-            select(Sticker.sticker_count)
+            select(Sticker.sticker_ahead)
             .where(Sticker.sticker_name == title)
             .where(Sticker.sticker_volume == volume))
 
@@ -229,7 +245,7 @@ async def upgrade_sticker_count(title, volume, number, symbol):
                 update(Sticker)
                 .where(Sticker.sticker_name == title)
                 .where(Sticker.sticker_volume == volume)
-                .values(count_product=result))
+                .values(sticker_ahead=result))
             await session.commit()
         elif symbol == '+':
             result = int(res) + int(number)
@@ -237,5 +253,5 @@ async def upgrade_sticker_count(title, volume, number, symbol):
                 update(Sticker)
                 .where(Sticker.sticker_name == title)
                 .where(Sticker.sticker_volume == volume)
-                .values(sticker_count=result))
+                .values(sticker_ahead=result))
             await session.commit()

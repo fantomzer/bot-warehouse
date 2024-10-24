@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, String, ForeignKey
+from sqlalchemy import String, ForeignKey, Integer
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
 from typing import Optional
@@ -16,9 +16,9 @@ class User(Base):
     __tablename__: str = 'users'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    tg_id = mapped_column(BigInteger)
-    user_name: Mapped[str] = mapped_column()
-    first_name: Mapped[str] = mapped_column()
+    tg_id: Mapped[str] = mapped_column(String(100))
+    user_name: Mapped[Optional[str]] = mapped_column(default=None)
+    first_name: Mapped[Optional[str]] = mapped_column(default=None)
     calculate_str: Mapped[str]
 
 
@@ -32,12 +32,10 @@ class Warehouse(Base):
 class Item(Base):
     __tablename__: str = 'items'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    product_name: Mapped[str] = mapped_column(String(25), unique=True)
-    count_product: Mapped[float] = mapped_column()
-    count_max: Mapped[float] = mapped_column()
-    data_add: Mapped[str] = mapped_column()
-    warehouse: Mapped[int] = mapped_column(ForeignKey('warehouses.id'))
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    product_name: Mapped[str] = mapped_column(String(50), unique=True)
+    product_number: Mapped[int] = mapped_column(Integer)
+    product_count: Mapped[int] = mapped_column(Integer, default=1)
 
 
 class Sticker(Base):
@@ -46,9 +44,18 @@ class Sticker(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     sticker_name: Mapped[str] = mapped_column(String(50))
     sticker_volume: Mapped[str] = mapped_column(String(50))
-    sticker_count: Mapped[Optional[int]] = mapped_column(default=0)
+    sticker_ahead: Mapped[Optional[int]] = mapped_column(Integer, default=0)
+    sticker_behind: Mapped[Optional[int]] = mapped_column(Integer, default=0)
     sticker_type: Mapped[Optional[str]] = mapped_column(String(25), default=None)
-    type: Mapped[Optional[str]] = mapped_column(String(50))
+
+
+class BottlingOil(Base):
+    __tablename__: str = 'bottling_oil'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    bottling_name: Mapped[str] = mapped_column(String(50))
+    bottling_number: Mapped[int] = mapped_column(Integer)
+    bottling_count: Mapped[int] = mapped_column(Integer, default=1)
 
 
 async def async_main():
