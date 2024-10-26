@@ -18,25 +18,24 @@ async def find_item(name):
         async with async_session() as session:
             return await session.execute(
                 select(Item.product_name, Item.product_number)
-                .where(Item.product_name.like(f'{name.lower()}%')))
+                .where(Item.product_name.like(f'{list_name[0].lower()}%')))
     elif len(list_name) == 2:
         async with async_session() as session:
             return await session.execute(
                 select(Item.product_name, Item.product_number)
                 .where(Item.product_name.like(f'{list_name[0].lower()}%'))
-                .where(Item.product_name.like(f'{list_name[1].lower()}%')))
+                .where(Item.product_name.like(f'% {list_name[1].lower()}%')))
     elif len(list_name) >= 3:
         async with async_session() as session:
             return await session.execute(
                 select(Item.product_name, Item.product_number)
                 .where(Item.product_name.like(f'{list_name[0].lower()}%'))
-                .where(Item.product_name.like(f'{list_name[1].lower()}%'))
-                .where(Item.product_name.like(f'{list_name[2].lower()}%')))
+                .where(Item.product_name.like(f'% {list_name[1].lower()}%'))
+                .where(Item.product_name.like(f'% {list_name[2].lower()}%')))
 
 
 async def find_sticker(name):
     list_name = name.split(' ')
-    print(list_name)
     if len(list_name) == 1:
         async with async_session() as session:
             return await session.execute(
