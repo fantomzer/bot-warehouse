@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from database.requests import show_item, show_items_type, find_item, show_stickers_type
+from database.requests import show_item, show_items_type, find_item, show_stickers_type, find_sticker
 
 
 main = InlineKeyboardMarkup(inline_keyboard=[
@@ -20,32 +20,9 @@ stickers = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Показать остатки', callback_data='sticker_')],
     [InlineKeyboardButton(text='Главное меню', callback_data='Назад:')]])
 
-# silver = InlineKeyboardMarkup(inline_keyboard=[
-#     [InlineKeyboardButton(text='Краска для дерева', callback_data='краска для дерева:silver')],
-#     [InlineKeyboardButton(text='Масла', callback_data='масла:silver')],
-#     [InlineKeyboardButton(text='Пропитка и антисептик', callback_data='пропитка и антисептик:silver')],
-#     [InlineKeyboardButton(text='Интерьерные краски', callback_data='интерьерные краски:silver')],
-#     [InlineKeyboardButton(text='Гидроизоляционная система', callback_data='гидроизоляционная система:silver')],
-#     [InlineKeyboardButton(text='Грунт', callback_data='грунт:silver')],
-#     [InlineKeyboardButton(text='Назад', callback_data='Наклейки')]])
-#
-# eco = InlineKeyboardMarkup(inline_keyboard=[
-#     [InlineKeyboardButton(text='Краска для дерева', callback_data='краска для дерева:eco')],
-#     [InlineKeyboardButton(text='Масла', callback_data='масла:eco')],
-#     [InlineKeyboardButton(text='Пропитка', callback_data='пропитка')],
-#     [InlineKeyboardButton(text='Интерьерные краски', callback_data='интерьерные краски:eco')],
-#     [InlineKeyboardButton(text='Фасадные краски', callback_data='фасадные краски:eco')],
-#     [InlineKeyboardButton(text='Назад', callback_data='Наклейки')]])
-#
-# expert = InlineKeyboardMarkup(inline_keyboard=[
-#     [InlineKeyboardButton(text='WF EXPERT база А', callback_data='wfa:expert')],
-#     [InlineKeyboardButton(text='WF EXPERT база C', callback_data='wfc:expert')],
-#     [InlineKeyboardButton(text='WP EXPERT грунт для дерева', callback_data='wp exp:expert')],
-#     [InlineKeyboardButton(text='WO EXPERT масло для н. р.', callback_data='wo exp:expert')],
-#     [InlineKeyboardButton(text='Назад', callback_data='Наклейки')]])
 
-main2 = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Главное меню', callback_data='Назад:')]])
+# main2 = InlineKeyboardMarkup(inline_keyboard=[
+#     [InlineKeyboardButton(text='Главное меню', callback_data='Назад:')]])
 
 
 add_nums = InlineKeyboardMarkup(inline_keyboard=[
@@ -82,20 +59,20 @@ async def find_items(name):
     return keyboard.adjust(1).as_markup()
 
 
-# async def show_stickers_line(prod_line):
-#     items = await show_sticker_line(prod_line)
-#     keyboard = InlineKeyboardBuilder()
-#     button = InlineKeyboardButton(text='Главное меню', callback_data='Назад:')
-#     for item in items:
-#         keyboard.add(InlineKeyboardButton(
-#             text=f'{item[0]} - {item[1]}: {item[2]}',
-#             callback_data=f'изменение_н:{item[0]}:{item[1]}'))
-#     keyboard.add(button)
-#     return keyboard.adjust(1).as_markup()
+async def find_stickers(name):
+    items = await find_sticker(name)
+    keyboard = InlineKeyboardBuilder()
+    button = InlineKeyboardButton(text='Главное меню', callback_data='Назад:')
+    for item in items:
+        keyboard.add(InlineKeyboardButton(
+            text=f'{item[0]}-{item[1]}: {item[2]}',
+            callback_data=f'остатокНак:{item[0]}:{item[1]}:{item[2]}'))
+    keyboard.add(button)
+    return keyboard.adjust(1).as_markup()
 
 
 async def items_view(type_sort, type_keyboard):
-    all_items = await show_items_type(type_sort, 1)
+    all_items = await show_items_type(type_sort)
     button1 = InlineKeyboardButton(text='Поиск', callback_data='поиск')
     button2 = InlineKeyboardButton(text='По алфавиту', callback_data=f'alphabet:{type_keyboard}')
     button3 = InlineKeyboardButton(text='По возрастанию', callback_data=f'count:{type_keyboard}')
@@ -120,7 +97,7 @@ async def items_view(type_sort, type_keyboard):
 
 async def stickers_view(type_sort, type_keyboard):
     all_items = await show_stickers_type(type_sort)
-    button1 = InlineKeyboardButton(text='Поиск', callback_data='поиск')
+    button1 = InlineKeyboardButton(text='Поиск', callback_data='поискНак')
     button2 = InlineKeyboardButton(text='По алфавиту', callback_data=f'alphabet:{type_keyboard}')
     button3 = InlineKeyboardButton(text='По возрастанию', callback_data=f'count:{type_keyboard}')
     button4 = InlineKeyboardButton(text='По убыванию', callback_data=f'count_desc:{type_keyboard}')
@@ -210,7 +187,8 @@ async def add_volume():
 async def item_change(item):
     keyboard = InlineKeyboardBuilder()
     keyboard.add(InlineKeyboardButton(text=f'Изменить {item}', callback_data=f'изменить:{item}'),
-                 InlineKeyboardButton(text=f'Удалить {item}', callback_data=f'подтверждение:{item}')
+                 InlineKeyboardButton(text=f'Удалить {item}', callback_data=f'подтверждение:{item}'),
+                 InlineKeyboardButton(text='Назад', callback_data=f'items:{item}')
                  )
     return keyboard.adjust(1).as_markup()
 

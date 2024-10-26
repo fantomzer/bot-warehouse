@@ -1,5 +1,3 @@
-import datetime
-
 from database.models import async_session
 from database.models import User, Item, Sticker
 from sqlalchemy import select, update, delete
@@ -15,47 +13,78 @@ async def set_user(tg_id, user_name, first_name):
 
 
 async def find_item(name):
-    async with async_session() as session:
-        return await session.execute(
-            select(Item.product_name, Item.product_number)
-            .where(Item.product_name.like(f'%{name.lower()}%')))
+    list_name = name.split(' ')
+    if len(list_name) == 1:
+        async with async_session() as session:
+            return await session.execute(
+                select(Item.product_name, Item.product_number)
+                .where(Item.product_name.like(f'%{name.lower()}%')))
+    elif len(list_name) == 2:
+        async with async_session() as session:
+            return await session.execute(
+                select(Item.product_name, Item.product_number)
+                .where(Item.product_name.like(f'%{list_name[0].lower()}%'))
+                .where(Item.product_name.like(f'%{list_name[1].lower()}%')))
+    elif len(list_name) >= 3:
+        async with async_session() as session:
+            return await session.execute(
+                select(Item.product_name, Item.product_number)
+                .where(Item.product_name.like(f'%{list_name[0].lower()}%'))
+                .where(Item.product_name.like(f'%{list_name[1].lower()}%'))
+                .where(Item.product_name.like(f'%{list_name[2].lower()}%')))
 
 
-async def add_item(title, number, warehouse):
+async def find_sticker(name):
+    list_name = name.split(' ')
+    if len(list_name) == 1:
+        async with async_session() as session:
+            return await session.execute(
+                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
+                .where(Sticker.sticker_name.like(f'%{name.upper()}%')))
+    elif len(list_name) == 2:
+        async with async_session() as session:
+            return await session.execute(
+                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
+                .where(Sticker.sticker_name.like(f'%{list_name[0].upper()}%'))
+                .where(Sticker.sticker_name.like(f'%{list_name[1].upper()}%')))
+    elif len(list_name) >= 3:
+        async with async_session() as session:
+            return await session.execute(
+                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
+                .where(Sticker.sticker_name.like(f'%{list_name[0].upper()}%'))
+                .where(Sticker.sticker_name.like(f'%{list_name[1].upper()}%'))
+                .where(Sticker.sticker_name.like(f'%{list_name[2].upper()}%')))
+
+
+async def add_item(title, number):
     async with async_session() as session:
         item = await session.scalar(select(Item).where(Item.product_name == title.lower()))
 
         if not item:
             session.add(Item(
                 product_name=title.lower(),
-                count_product=number,
-                count_max=number,
-                data_add=datetime.datetime.now().strftime('%Y-%m-%d'),
-                warehouse=warehouse
+                product_number=number
             ))
             await session.commit()
         elif item:
             raise KeyError(f'Наименование {title} уже есть в базе данных')
 
 
-async def show_items_type(type_sort, warehouse):
+async def show_items_type(type_sort):
     if type_sort == 'alphabet':
         async with async_session() as session:
             return await session.execute(
                 select(Item.product_name, Item.product_number)
-                .where(Item.warehouse == warehouse)
                 .order_by(Item.product_name))
     elif type_sort == 'count':
         async with async_session() as session:
             return await session.execute(
                 select(Item.product_name, Item.product_number)
-                .where(Item.warehouse == warehouse)
                 .order_by(Item.product_number))
     elif type_sort == 'count_desc':
         async with async_session() as session:
             return await session.execute(
                 select(Item.product_name, Item.product_number)
-                .where(Item.warehouse == warehouse)
                 .order_by(Item.product_number.desc()))
 
 
@@ -65,14 +94,6 @@ async def show_item(prod_name):
             select(Item.product_name, Item.product_number)
             .where(Item.product_name == prod_name)
         )
-
-
-# async def show_sticker_line(line):
-#     async with async_session() as session:
-#         return await session.execute(
-#             select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_count)
-#             .where(Sticker.type == line)
-#         )
 
 
 async def show_sticker(title, volume):
@@ -191,14 +212,14 @@ async def upgrade_item_count(product_name, number, symbol):
             await session.execute(
                 update(Item)
                 .where(Item.product_name == product_name)
-                .values(count_product=result, data_add=datetime.datetime.now().strftime('%Y-%m-%d')))
+                .values(count_product=result))
             await session.commit()
         elif symbol == '+':
             result = float(res) + float(number)
             await session.execute(
                 update(Item)
                 .where(Item.product_name == product_name)
-                .values(count_product=result, data_add=datetime.datetime.now().strftime('%Y-%m-%d')))
+                .values(count_product=result))
             await session.commit()
 
 
@@ -229,7 +250,6 @@ async def add_sticker(title, volume):
 
 
 async def upgrade_sticker_count(title, volume, number, symbol):
-    print(title, volume, number, symbol)
     async with async_session() as session:
         res = await session.scalar(
             select(Sticker.sticker_ahead)
