@@ -36,24 +36,25 @@ async def find_item(name):
 
 async def find_sticker(name):
     list_name = name.split(' ')
+    print(list_name)
     if len(list_name) == 1:
         async with async_session() as session:
             return await session.execute(
                 select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
-                .where(Sticker.sticker_name.like(f'{name.upper()}%')))
+                .where(Sticker.sticker_name.like(f'{list_name[0].upper()}%')))
     elif len(list_name) == 2:
         async with async_session() as session:
             return await session.execute(
                 select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
                 .where(Sticker.sticker_name.like(f'{list_name[0].upper()}%'))
-                .where(Sticker.sticker_name.like(f'{list_name[1].upper()}%')))
+                .where(Sticker.sticker_name.like(f'% {list_name[1].upper()}%')))
     elif len(list_name) >= 3:
         async with async_session() as session:
             return await session.execute(
                 select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
                 .where(Sticker.sticker_name.like(f'{list_name[0].upper()}%'))
-                .where(Sticker.sticker_name.like(f'{list_name[1].upper()}%'))
-                .where(Sticker.sticker_name.like(f'{list_name[2].upper()}%')))
+                .where(Sticker.sticker_name.like(f'% {list_name[1].upper()}%'))
+                .where(Sticker.sticker_name.like(f'% {list_name[2].upper()}%')))
 
 
 async def add_item(title, number):
