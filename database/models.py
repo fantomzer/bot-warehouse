@@ -46,7 +46,6 @@ class Sticker(Base):
     sticker_volume: Mapped[str] = mapped_column(String(50))
     sticker_ahead: Mapped[Optional[int]] = mapped_column(Integer, default=0)
     sticker_behind: Mapped[Optional[int]] = mapped_column(Integer, default=0)
-    # sticker_type: Mapped[Optional[str]] = mapped_column(String(25), default=None)
 
 
 class BottlingOil(Base):
