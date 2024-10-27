@@ -152,7 +152,7 @@ async def update_fourth(callback: CallbackQuery, state: FSMContext):
     elif data['change'] == '+':
         await rq.upgrade_sticker_count(data["title"], data["volume"], data["number"], data["change"])
         item = (await rq.show_sticker(data["title"], data["volume"])).fetchone()
-        await callback.message.answer(f'<b>{item[0]}<b/> - <b>{item[1]}</b> : <b>{item[2]}</b>',
+        await callback.message.answer(f'<b>{item[0]}</b> - <b>{item[1]}</b> : <b>{item[2]}</b>',
                                       reply_markup=kb.main)
     await rq.del_calculate(callback.message.chat.id)
     await state.clear()
