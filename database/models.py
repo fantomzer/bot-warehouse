@@ -34,7 +34,7 @@ class Item(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     product_name: Mapped[str] = mapped_column(String(50), unique=True)
-    product_number: Mapped[int] = mapped_column(Integer)
+    product_number: Mapped[int] = mapped_column(Integer, default=1)
     product_count: Mapped[int] = mapped_column(Integer, default=1)
 
 
