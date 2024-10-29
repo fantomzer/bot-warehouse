@@ -74,24 +74,24 @@ async def show_items_type(type_sort):
     if type_sort == 'alphabet':
         async with async_session() as session:
             return await session.execute(
-                select(Item.product_name, Item.product_number)
+                select(Item.product_name, Item.product_count)
                 .order_by(Item.product_name))
     elif type_sort == 'count':
         async with async_session() as session:
             return await session.execute(
-                select(Item.product_name, Item.product_number)
-                .order_by(Item.product_number))
+                select(Item.product_name, Item.product_count)
+                .order_by(Item.product_count))
     elif type_sort == 'count_desc':
         async with async_session() as session:
             return await session.execute(
-                select(Item.product_name, Item.product_number)
-                .order_by(Item.product_number.desc()))
+                select(Item.product_name, Item.product_count)
+                .order_by(Item.product_count.desc()))
 
 
 async def show_item(prod_name):
     async with async_session() as session:
         return await session.execute(
-            select(Item.product_name, Item.product_number)
+            select(Item.product_name, Item.product_count, Item.product_number)
             .where(Item.product_name == prod_name)
         )
 
@@ -202,24 +202,47 @@ async def volume_selection(user_id, volume):
 
 async def upgrade_item_count(product_name, number, symbol):
     async with async_session() as session:
+        res = await session.scalar(select(Item.product_count).where(Item.product_name == product_name))
+
+        if symbol == '-':
+            if int(number) > int(res):
+                raise ValueError(f'Число {number} не может быть больше остатка')
+
+            result = int(res) - int(number)
+            await session.execute(
+                update(Item)
+                .where(Item.product_name == product_name)
+                .values(product_count=result))
+            await session.commit()
+        elif symbol == '+':
+            result = int(res) + int(number)
+            await session.execute(
+                update(Item)
+                .where(Item.product_name == product_name)
+                .values(product_count=result))
+            await session.commit()
+
+
+async def upgrade_item_number(product_name, number, symbol):
+    async with async_session() as session:
         res = await session.scalar(select(Item.product_number).where(Item.product_name == product_name))
 
         if symbol == '-':
-            if float(number) > float(res):
+            if int(number) > int(res):
                 raise ValueError(f'Число {number} не может быть больше остатка')
 
-            result = float(res) - float(number)
+            result = int(res) - int(number)
             await session.execute(
                 update(Item)
                 .where(Item.product_name == product_name)
-                .values(count_product=result))
+                .values(product_number=result))
             await session.commit()
         elif symbol == '+':
-            result = float(res) + float(number)
+            result = int(res) + int(number)
             await session.execute(
                 update(Item)
                 .where(Item.product_name == product_name)
-                .values(count_product=result))
+                .values(product_number=result))
             await session.commit()
 
 

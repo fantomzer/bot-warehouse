@@ -21,10 +21,6 @@ stickers = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Главное меню', callback_data='Назад:')]])
 
 
-# main2 = InlineKeyboardMarkup(inline_keyboard=[
-#     [InlineKeyboardButton(text='Главное меню', callback_data='Назад:')]])
-
-
 add_nums = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='1', callback_data='1'), InlineKeyboardButton(text='2', callback_data='2'),
      InlineKeyboardButton(text='3', callback_data='3')],
@@ -115,17 +111,18 @@ async def stickers_view(type_sort, type_keyboard):
         keyboard.add(InlineKeyboardButton(
             text=f'{item[0]}-{item[1]}: {item[2]}|{item[3]}',
             callback_data=f'{type_keyboard}:{item[0]}:{item[1]}:{item[2]}:{item[3]}'))
-    keyboard.add(button5)
+    keyboard.add(button1, button2, button3, button4, button5)
     return keyboard.adjust(1, 3, 1).as_markup()
 
 
-async def choice():
+async def choice(type_choice):
     choices = [('➕', '+'), ('➖', '-')]
     keyboard = InlineKeyboardBuilder()
     for choice_ in choices:
         keyboard.add(InlineKeyboardButton(
             text=f'{choice_[0]}',
-            callback_data=f'выбор:{choice_[1]}'))
+            callback_data=f'{type_choice}:{choice_[1]}'))
+    keyboard.add(InlineKeyboardButton(text='Назад', callback_data='items'))
     return keyboard.adjust(1).as_markup()
 
 
@@ -186,7 +183,8 @@ async def add_volume():
 
 async def item_change(item):
     keyboard = InlineKeyboardBuilder()
-    keyboard.add(InlineKeyboardButton(text=f'Изменить {item}', callback_data=f'изменить:{item}'),
+    keyboard.add(InlineKeyboardButton(text=f'Изменить количество {item}', callback_data=f'изменить:{item}'),
+                 InlineKeyboardButton(text=f'Изменить штуки (коробки, рулоны и тд) {item}', callback_data=f'изменитьшт:{item}'),
                  InlineKeyboardButton(text=f'Удалить {item}', callback_data=f'подтверждение:{item}'),
                  InlineKeyboardButton(text='Назад', callback_data=f'items:{item}')
                  )

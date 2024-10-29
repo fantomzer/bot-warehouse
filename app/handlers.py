@@ -170,10 +170,10 @@ async def update_second(callback: CallbackQuery, state: FSMContext):
     res = callback.data.split(':')[1]
     await state.update_data(title=res)
     await state.set_state(UpdateItem.change)
-    await callback.message.edit_text('⬇️Выберете действие⬇️', reply_markup=await kb.choice())
+    await callback.message.edit_text('⬇️Выберете действие⬇️', reply_markup=await kb.choice('выборкол'))
 
 
-@router.callback_query(F.data.startswith('выбор:'))
+@router.callback_query(F.data.startswith('выборкол:'))
 async def update_third(callback: CallbackQuery, state: FSMContext):
     res = callback.data.split(':')[1]
     await state.update_data(change=res)
@@ -217,8 +217,62 @@ async def update_fourth(callback: CallbackQuery, state: FSMContext):
     await state.clear()
 
 
+@router.callback_query(F.data.startswith('изменитьшт:'))
+async def update_second(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(UpdateItem.title)
+    res = callback.data.split(':')[1]
+    await state.update_data(title=res)
+    await state.set_state(UpdateItem.change)
+    await callback.message.edit_text('⬇️Выберете действие⬇️', reply_markup=await kb.choice('выборшт'))
+
+
+@router.callback_query(F.data.startswith('выборшт:'))
+async def update_third(callback: CallbackQuery, state: FSMContext):
+    res = callback.data.split(':')[1]
+    await state.update_data(change=res)
+    await state.set_state(UpdateItem.number)
+    await callback.message.edit_text('⬇️Выберите количество⬇️',
+                                     reply_markup=await kb.add_nums_two('кл_3', 'ввод4'))
+
+
+@router.callback_query(F.data.in_(['кл_3:1', 'кл_3:2', 'кл_3:3', 'кл_3:4', 'кл_3:5', 'кл_3:6', 'кл_3:7', 'кл_3:8',
+                                   'кл_3:9', 'кл_3:0', 'кл_3:.', 'кл_3:-']))
+async def callback_func_two(callback: CallbackQuery, state: FSMContext):
+    user_id, data = callback.message.chat.id, callback.data.split(':')[1]
+    try:
+        await rq.calculate_str(user_id, data)
+    except Exception as exp:
+        await callback.answer(f'{exp}')
+    num_data = await rq.get_calculate(user_id)
+    await state.update_data(number=num_data)
+    await callback.message.edit_text(f'{num_data}ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ᅠ ',
+                                     reply_markup=await kb.add_nums_two('кл_3', 'ввод4'))
+
+
+@router.callback_query(F.data.endswith('ввод4'))
+async def update_fourth(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    await callback.message.edit_text(f'Число {data["number"]} принято📝')
+    if data['change'] == '-':
+        try:
+            await rq.upgrade_item_number(data["title"], data["number"], data["change"])
+            item = (await rq.show_item(data["title"])).fetchone()
+            await callback.message.answer(f'Товар уменьшен🗂\nНазвание:<b>{item[0]}</b>\nШтуки: <b>{item[2]}</b>',
+                                          reply_markup=kb.main)
+        except ValueError as err:
+            await callback.message.answer(f'⛔️{err}⛔️', reply_markup=kb.main)
+    elif data['change'] == '+':
+        await rq.upgrade_item_number(data["title"], data["number"], data["change"])
+        item = (await rq.show_item(data["title"])).fetchone()
+        await callback.message.answer(f'Товар добавлен🗂\nНазвание:<b>{item[0]}</b>\nШтуки: <b>{item[2]}</b>',
+                                      reply_markup=kb.main)
+    await rq.del_calculate(callback.message.chat.id)
+    await state.clear()
+
+
 @router.callback_query(F.data.startswith('items'))
-async def show_sort_alphabet(callback: CallbackQuery):
+async def show_sort_alphabet(callback: CallbackQuery, state: FSMContext):
+    await state.clear()
     await callback.answer('Показать наименования')
     await callback.message.edit_text(
         '⬇️Наименования на складе⬇️',
