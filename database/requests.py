@@ -63,7 +63,7 @@ async def add_item(title, number):
         if not item:
             session.add(Item(
                 product_name=title.lower(),
-                product_number=number
+                product_count=number
             ))
             await session.commit()
         elif item:
