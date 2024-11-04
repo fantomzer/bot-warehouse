@@ -17,19 +17,29 @@ async def find_item(name):
     if len(list_name) == 1:
         async with async_session() as session:
             return await session.execute(
-                select(Item.product_name, Item.product_number)
-                .where(Item.product_name.like(f'{list_name[0].lower()}%')))
+                select(Item.product_name, Item.product_count)
+                .where(
+                    (Item.product_name.like(f'{list_name[0].lower()}%')) |
+                    (Item.product_name.like(f'% {list_name[0].lower()}%'))
+                )
+            )
     elif len(list_name) == 2:
         async with async_session() as session:
             return await session.execute(
-                select(Item.product_name, Item.product_number)
-                .where(Item.product_name.like(f'{list_name[0].lower()}%'))
+                select(Item.product_name, Item.product_count)
+                .where(
+                    (Item.product_name.like(f'{list_name[0].lower()}%')) |
+                    (Item.product_name.like(f'% {list_name[0].lower()}%'))
+                )
                 .where(Item.product_name.like(f'% {list_name[1].lower()}%')))
     elif len(list_name) >= 3:
         async with async_session() as session:
             return await session.execute(
-                select(Item.product_name, Item.product_number)
-                .where(Item.product_name.like(f'{list_name[0].lower()}%'))
+                select(Item.product_name, Item.product_count)
+                .where(
+                    (Item.product_name.like(f'{list_name[0].lower()}%')) |
+                    (Item.product_name.like(f'% {list_name[0].lower()}%'))
+                )
                 .where(Item.product_name.like(f'% {list_name[1].lower()}%'))
                 .where(Item.product_name.like(f'% {list_name[2].lower()}%')))
 
@@ -40,18 +50,28 @@ async def find_sticker(name):
         async with async_session() as session:
             return await session.execute(
                 select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
-                .where(Sticker.sticker_name.like(f'{list_name[0].upper()}%')))
+                .where(
+                    (Sticker.sticker_name.like(f'{list_name[0].upper()}%')) |
+                    (Sticker.sticker_name.like(f'% {list_name[0].upper()}%'))
+                )
+            )
     elif len(list_name) == 2:
         async with async_session() as session:
             return await session.execute(
                 select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
-                .where(Sticker.sticker_name.like(f'{list_name[0].upper()}%'))
+                .where(
+                    (Sticker.sticker_name.like(f'{list_name[0].upper()}%')) |
+                    (Sticker.sticker_name.like(f'% {list_name[0].upper()}%'))
+                )
                 .where(Sticker.sticker_name.like(f'% {list_name[1].upper()}%')))
     elif len(list_name) >= 3:
         async with async_session() as session:
             return await session.execute(
                 select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
-                .where(Sticker.sticker_name.like(f'{list_name[0].upper()}%'))
+                .where(
+                    (Sticker.sticker_name.like(f'{list_name[0].upper()}%')) |
+                    (Sticker.sticker_name.like(f'% {list_name[0].upper()}%'))
+                )
                 .where(Sticker.sticker_name.like(f'% {list_name[1].upper()}%'))
                 .where(Sticker.sticker_name.like(f'% {list_name[2].upper()}%')))
 

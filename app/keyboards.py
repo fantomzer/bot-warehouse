@@ -184,7 +184,6 @@ async def add_volume():
 async def item_change(item):
     keyboard = InlineKeyboardBuilder()
     keyboard.add(InlineKeyboardButton(text=f'Изменить количество {item}', callback_data=f'изменить:{item}'),
-                 InlineKeyboardButton(text=f'Изменить штуки (коробки, рулоны и тд) {item}', callback_data=f'изменитьшт:{item}'),
                  InlineKeyboardButton(text=f'Удалить {item}', callback_data=f'подтверждение:{item}'),
                  InlineKeyboardButton(text='Назад', callback_data=f'items:{item}')
                  )
