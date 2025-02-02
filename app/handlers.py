@@ -100,7 +100,7 @@ async def number(callback: CallbackQuery, state: FSMContext):
     await state.set_state(UpdateSticker.volume)
     await state.update_data(volume=volume)
     await state.set_state(UpdateSticker.change)
-    await callback.message.answer(
+    await callback.message.edit_text(
         f'Наклейка: <b>{item[0]}</b>\nОбъём: <b>{item[1]}</b>\nКоличество: <b>{item[2]}</b>',
         reply_markup=await kb.choice_three())
 
@@ -306,7 +306,7 @@ async def number(callback: CallbackQuery):
     await callback.answer('Выбор')
     res = callback.data.split(':')[1]
     item = (await rq.show_item(res)).fetchone()
-    await callback.message.answer(
+    await callback.message.edit_text(
         f'Товар: <b>{item[0]}</b>\nКол-во: <b>{item[1]}</b>',
         reply_markup=await kb.item_change(item[0]))
 
