@@ -80,14 +80,14 @@ async def show_sort_alphabet(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('поискНак'))
 async def item_find(callback: CallbackQuery, state: FSMContext):
     await state.set_state(FindSticker.title)
-    await callback.message.edit_text('⬇️Введите название для поиска⬇️')
+    await callback.message.answer('⬇️Введите название для поиска⬇️')
 
 
 @router.message(FindSticker.title)
 async def add_third(message: Message, state: FSMContext):
     await state.update_data(title=message.text)
     data = await state.get_data()
-    await message.reply('⬇️Результаты поиска⬇️', reply_markup=await kb.find_stickers(data["title"]))
+    await message.answer('⬇️Результаты поиска⬇️', reply_markup=await kb.find_stickers(data["title"]))
 
 
 @router.callback_query(F.data.startswith('остатокНак'))
@@ -100,7 +100,7 @@ async def number(callback: CallbackQuery, state: FSMContext):
     await state.set_state(UpdateSticker.volume)
     await state.update_data(volume=volume)
     await state.set_state(UpdateSticker.change)
-    await callback.message.edit_text(
+    await callback.message.answer(
         f'Наклейка: <b>{item[0]}</b>\nОбъём: <b>{item[1]}</b>\nКоличество: <b>{item[2]}</b>',
         reply_markup=await kb.choice_three())
 
@@ -140,7 +140,7 @@ async def callback_func_two(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('|sticker'))
 async def update_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    await callback.message.edit_text(f'Число {data["number"]} принято📝')
+    await callback.message.edit_text(f'Число {data["number"]} принято📝 {data["title"]}|{data["volume"]}')
     if data['change'] == '-':
         try:
             await rq.upgrade_sticker_count(data["title"], data["volume"], data["number"], data["change"])
@@ -199,7 +199,7 @@ async def callback_func_two(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('ввод2'))
 async def update_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    await callback.message.edit_text(f'Число {data["number"]} принято📝')
+    await callback.message.edit_text(f'Число {data["number"]} принято📝 {data["title"]}')
     if data['change'] == '-':
         try:
             await rq.upgrade_item_count(data["title"], data["number"], data["change"])
@@ -252,7 +252,7 @@ async def callback_func_two(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('ввод4'))
 async def update_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    await callback.message.edit_text(f'Число {data["number"]} принято📝')
+    await callback.message.edit_text(f'Число {data["number"]} принято📝 {data["title"]}')
     if data['change'] == '-':
         try:
             await rq.upgrade_item_number(data["title"], data["number"], data["change"])
@@ -289,7 +289,7 @@ async def item_find(callback: CallbackQuery, state: FSMContext):
 async def add_third(message: Message, state: FSMContext):
     await state.update_data(title=message.text)
     data = await state.get_data()
-    await message.reply('⬇️Результаты поиска⬇️', reply_markup=await kb.find_items(data["title"]))
+    await message.answer('⬇️Результаты поиска⬇️', reply_markup=await kb.find_items(data["title"]))
 
 
 @router.callback_query(F.data.endswith('остаток'))
@@ -306,7 +306,7 @@ async def number(callback: CallbackQuery):
     await callback.answer('Выбор')
     res = callback.data.split(':')[1]
     item = (await rq.show_item(res)).fetchone()
-    await callback.message.edit_text(
+    await callback.message.answer(
         f'Товар: <b>{item[0]}</b>\nКол-во: <b>{item[1]}</b>',
         reply_markup=await kb.item_change(item[0]))
 
@@ -340,7 +340,7 @@ async def callback_func(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('ввод'))
 async def add_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    await callback.message.edit_text(f'Число {data["number"]} принято📝')
+    await callback.message.edit_text(f'Число {data["number"]} принято📝 {data["title"]}')
     try:
         await rq.add_item(data["title"], data["number"])
         await callback.message.answer(
@@ -384,7 +384,7 @@ async def callback_func(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('ввод3'))
 async def add_fifth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    await callback.message.edit_text(f'Наклейка {data["title"]} принята📝')
+    await callback.message.edit_text(f'Наклейка {data["title"]} принята📝 {data["title"]}|{data["volume"]}')
     try:
         await rq.add_sticker(data["title"], data["volume"])
         await callback.message.answer(

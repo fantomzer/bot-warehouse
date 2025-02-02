@@ -6,7 +6,7 @@ from database.requests import show_item, show_items_type, find_item, show_sticke
 
 main = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Наклейки', callback_data='Наклейки')],
-    [InlineKeyboardButton(text='Покраска', callback_data='Покраска')]])
+    [InlineKeyboardButton(text='Склад', callback_data='Покраска')]])
 
 
 painting = InlineKeyboardMarkup(inline_keyboard=[
@@ -87,7 +87,7 @@ async def items_view(type_sort, type_keyboard):
         keyboard.add(InlineKeyboardButton(
             text=f'{item[0]} - {item[1]}',
             callback_data=f'{type_keyboard}:{item[0]}'))
-    keyboard.add(button5)
+    keyboard.add(button1, button2, button3, button4, button5)
     return keyboard.adjust(1, 3, 1).as_markup()
 
 
