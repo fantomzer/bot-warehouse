@@ -161,7 +161,7 @@ async def update_fourth(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.startswith('Покраска'))
 async def cmd_start(call: CallbackQuery):
     await call.answer('Покраска')
-    await call.message.edit_text('Склад: покраска', reply_markup=kb.painting)
+    await call.message.edit_text('Склад: материалы', reply_markup=kb.painting)
 
 
 @router.callback_query(F.data.startswith('изменить:'))
