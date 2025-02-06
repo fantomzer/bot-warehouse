@@ -12,12 +12,14 @@ main = InlineKeyboardMarkup(inline_keyboard=[
 painting = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Добавить предмет', callback_data='add_item')],
     [InlineKeyboardButton(text='Показать остатки', callback_data='items')],
+    [InlineKeyboardButton(text='Остатки списком', callback_data='list_i')],
     [InlineKeyboardButton(text='Главное меню', callback_data='Назад:')]])
 
 
 stickers = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Добавить наклейку', callback_data='add_sticker')],
     [InlineKeyboardButton(text='Показать остатки', callback_data='sticker_')],
+    [InlineKeyboardButton(text='Остатки списком', callback_data='list_s')],
     [InlineKeyboardButton(text='Главное меню', callback_data='Назад:')]])
 
 
@@ -109,8 +111,8 @@ async def stickers_view(type_sort, type_keyboard):
     keyboard.add(button1, button2, button3, button4)
     for item in all_items:
         keyboard.add(InlineKeyboardButton(
-            text=f'{item[0]}-{item[1]}: {item[2]}|{item[3]}',
-            callback_data=f'{type_keyboard}:{item[0]}:{item[1]}:{item[2]}:{item[3]}'))
+            text=f'{item[0]}-{item[1]}: {item[2]}',
+            callback_data=f'{type_keyboard}:{item[0]}:{item[1]}:{item[2]}'))
     keyboard.add(button1, button2, button3, button4, button5)
     return keyboard.adjust(1, 3, 1).as_markup()
 
