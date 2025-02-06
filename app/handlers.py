@@ -85,7 +85,7 @@ async def show_sort_alphabet(callback: CallbackQuery, state: FSMContext):
     half = len(result) // 2
     halves = result[:half], result[half:]
     table = PrettyTable()
-    table.field_names = ['Наименование', 'Количество']
+    table.field_names = ['Наименование', 'Итого']
 
     for item in halves[0]:
         table.add_row([f'{item[0]}|{item[1]}', item[2]])
@@ -93,7 +93,7 @@ async def show_sort_alphabet(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(f'{response_one}', parse_mode='Markdown')
 
     table = PrettyTable()
-    table.field_names = ['Наименование', 'Количество']
+    table.field_names = ['Наименование', 'Итого']
 
     for item in halves[1]:
         table.add_row([f'{item[0]}|{item[1]}', item[2]])
@@ -310,7 +310,7 @@ async def show_sort_alphabet(callback: CallbackQuery, state: FSMContext):
     await state.clear()
     result = (await rq.show_items_type('count_desc')).fetchall()
     table = PrettyTable()
-    table.field_names = ['Наименование', 'Количество']
+    table.field_names = ['Наименование', 'Итого']
     for item in result:
         table.add_row(item)
     response = '```\n{}```'.format(table.get_string())
