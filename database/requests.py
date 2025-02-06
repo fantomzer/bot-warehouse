@@ -137,17 +137,17 @@ async def show_stickers_type(type_sort):
     if type_sort == 'alphabet':
         async with async_session() as session:
             return await session.execute(
-                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead, Sticker.sticker_behind)
+                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
                 .order_by(Sticker.sticker_name))
     elif type_sort == 'count':
         async with async_session() as session:
             return await session.execute(
-                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead, Sticker.sticker_behind)
+                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
                 .order_by(Sticker.sticker_ahead))
     elif type_sort == 'count_desc':
         async with async_session() as session:
             return await session.execute(
-                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead, Sticker.sticker_behind)
+                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
                 .order_by(Sticker.sticker_ahead.desc()))
 
 
