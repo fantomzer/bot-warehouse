@@ -3,6 +3,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
+from prettytable import PrettyTable
 
 import app.keyboards as kb
 import database.requests as rq
@@ -77,6 +78,31 @@ async def show_sort_alphabet(callback: CallbackQuery, state: FSMContext):
         reply_markup=await kb.stickers_view('alphabet', 'остатокНак'))
 
 
+@router.callback_query(F.data.startswith('list_s'))
+async def show_sort_alphabet(callback: CallbackQuery, state: FSMContext):
+    await state.clear()
+    result = (await rq.show_stickers_type('count_desc')).fetchall()
+    half = len(result) // 2
+    halves = result[:half], result[half:]
+    table = PrettyTable()
+    table.field_names = ['Наименование', 'Количество']
+
+    for item in halves[0]:
+        table.add_row([f'{item[0]}|{item[1]}', item[2]])
+    response_one = '```\n{}```'.format(table.get_string())
+    await callback.message.edit_text(f'{response_one}', parse_mode='Markdown')
+
+    table = PrettyTable()
+    table.field_names = ['Наименование', 'Количество']
+
+    for item in halves[1]:
+        table.add_row([f'{item[0]}|{item[1]}', item[2]])
+    response_two = '```\n{}```'.format(table.get_string())
+    await callback.message.answer(f'{response_two}', parse_mode='Markdown')
+
+    await callback.message.answer('Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
+
+
 @router.callback_query(F.data.endswith('поискНак'))
 async def item_find(callback: CallbackQuery, state: FSMContext):
     await state.set_state(FindSticker.title)
@@ -101,7 +127,7 @@ async def number(callback: CallbackQuery, state: FSMContext):
     await state.update_data(volume=volume)
     await state.set_state(UpdateSticker.change)
     await callback.message.edit_text(
-        f'Наклейка: <b>{item[0]}</b>\nОбъём: <b>{item[1]}</b>\nКоличество: <b>{item[2]}</b>',
+        f'Наклейка: <b>{item[0]}\nОбъём: {item[1]}\nКоличество: {item[2]}</b>',
         reply_markup=await kb.choice_three())
 
 
@@ -140,19 +166,19 @@ async def callback_func_two(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('|sticker'))
 async def update_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    await callback.message.edit_text(f'Число {data["number"]} принято📝')
+    await callback.message.edit_text(f'Число <b>{data["number"]}</b> принято📝')
     if data['change'] == '-':
         try:
             await rq.upgrade_sticker_count(data["title"], data["volume"], data["number"], data["change"])
             item = (await rq.show_sticker(data["title"], data["volume"])).fetchone()
-            await callback.message.answer(f'<b>{item[0]}</b> - <b>{item[1]}</b> : <b>{item[2]}</b>')
+            await callback.message.answer(f'Наклейки уменьшены\n<b>{item[0]}|{item[1]}\nКоличество: {item[2]}</b>')
             await callback.message.answer('Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
         except ValueError as err:
             await callback.message.answer(f'⛔️{err}⛔️', reply_markup=kb.main)
     elif data['change'] == '+':
         await rq.upgrade_sticker_count(data["title"], data["volume"], data["number"], data["change"])
         item = (await rq.show_sticker(data["title"], data["volume"])).fetchone()
-        await callback.message.answer(f'<b>{item[0]}</b> + <b>{item[1]}</b> : <b>{item[2]}</b>')
+        await callback.message.answer(f'Наклейки увеличены\n<b>{item[0]}|{item[1]}\nКоличество: {item[2]}</b>')
         await callback.message.answer('Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
     await rq.del_calculate(callback.message.chat.id)
     await state.clear()
@@ -199,19 +225,19 @@ async def callback_func_two(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('ввод2'))
 async def update_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    await callback.message.edit_text(f'Число {data["number"]} принято📝')
+    await callback.message.edit_text(f'Число <b>{data["number"]}</b> принято📝')
     if data['change'] == '-':
         try:
             await rq.upgrade_item_count(data["title"], data["number"], data["change"])
             item = (await rq.show_item(data["title"])).fetchone()
-            await callback.message.answer(f'Товар уменьшен🗂\nНазвание:<b>{item[0]}</b>\nКоличество: <b>{item[1]}</b>')
+            await callback.message.answer(f'Товар уменьшен🗂\nНазвание:<b>{item[0]}\nКоличество: {item[1]}</b>')
             await callback.message.answer('Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
         except ValueError as err:
             await callback.message.answer(f'⛔️{err}⛔️', reply_markup=kb.main)
     elif data['change'] == '+':
         await rq.upgrade_item_count(data["title"], data["number"], data["change"])
         item = (await rq.show_item(data["title"])).fetchone()
-        await callback.message.answer(f'Товар добавлен🗂\nНазвание:<b>{item[0]}</b>\nКоличество: <b>{item[1]}</b>')
+        await callback.message.answer(f'Товар добавлен🗂\nНазвание:<b>{item[0]}\nКоличество: {item[1]}</b>')
         await callback.message.answer('Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
     await rq.del_calculate(callback.message.chat.id)
     await state.clear()
@@ -252,19 +278,19 @@ async def callback_func_two(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('ввод4'))
 async def update_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    await callback.message.edit_text(f'Число {data["number"]} принято📝')
+    await callback.message.edit_text(f'Число <b>{data["number"]}</b> принято📝')
     if data['change'] == '-':
         try:
             await rq.upgrade_item_number(data["title"], data["number"], data["change"])
             item = (await rq.show_item(data["title"])).fetchone()
-            await callback.message.answer(f'Товар уменьшен🗂\nНазвание:<b>{item[0]}</b>\nШтуки: <b>{item[2]}</b>')
+            await callback.message.answer(f'Товар уменьшен🗂\nНазвание:<b>{item[0]}\nШтуки: {item[2]}</b>')
             await callback.message.answer('Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
         except ValueError as err:
             await callback.message.answer(f'⛔️{err}⛔️', reply_markup=kb.main)
     elif data['change'] == '+':
         await rq.upgrade_item_number(data["title"], data["number"], data["change"])
         item = (await rq.show_item(data["title"])).fetchone()
-        await callback.message.answer(f'Товар добавлен🗂\nНазвание:<b>{item[0]}</b>\nШтуки: <b>{item[2]}</b>')
+        await callback.message.answer(f'Товар добавлен🗂\nНазвание:<b>{item[0]}\nШтуки: {item[2]}</b>')
         await callback.message.answer('Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
     await rq.del_calculate(callback.message.chat.id)
     await state.clear()
@@ -277,6 +303,19 @@ async def show_sort_alphabet(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
         '⬇️Наименования на складе⬇️',
         reply_markup=await kb.items_view('alphabet', 'остаток'))
+
+
+@router.callback_query(F.data.startswith('list_i'))
+async def show_sort_alphabet(callback: CallbackQuery, state: FSMContext):
+    await state.clear()
+    result = (await rq.show_items_type('count_desc')).fetchall()
+    table = PrettyTable()
+    table.field_names = ['Наименование', 'Количество']
+    for item in result:
+        table.add_row(item)
+    response = '```\n{}```'.format(table.get_string())
+    await callback.message.edit_text(f'{response}', parse_mode='Markdown')
+    await callback.message.answer('Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
 
 
 @router.callback_query(F.data.startswith('поиск'))
@@ -307,7 +346,7 @@ async def number(callback: CallbackQuery):
     res = callback.data.split(':')[1]
     item = (await rq.show_item(res)).fetchone()
     await callback.message.edit_text(
-        f'Товар: <b>{item[0]}</b>\nКол-во: <b>{item[1]}</b>',
+        f'Товар: <b>{item[0]}\nКол-во: {item[1]}</b>',
         reply_markup=await kb.item_change(item[0]))
 
 
@@ -340,11 +379,11 @@ async def callback_func(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('ввод'))
 async def add_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    await callback.message.edit_text(f'Число {data["number"]} принято📝')
+    await callback.message.edit_text(f'Число <b>{data["number"]}</b> принято📝')
     try:
         await rq.add_item(data["title"], data["number"])
         await callback.message.answer(
-            f'Товар добавлен🗂\nНазвание: <b>{data["title"]}</b>\nКоличество: <b>{data["number"]}</b>')
+            f'Товар добавлен🗂\nНазвание: <b>{data["title"]}\nКоличество: {data["number"]}</b>')
         await callback.message.answer('Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
     except Exception as err:
         await callback.message.answer(f'⛔️{err}⛔️', reply_markup=kb.main)
@@ -384,11 +423,11 @@ async def callback_func(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('ввод3'))
 async def add_fifth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    await callback.message.edit_text(f'Наклейка {data["title"]} принята📝')
+    await callback.message.edit_text(f'Наклейка <b>{data["title"]}</b> принята📝')
     try:
         await rq.add_sticker(data["title"], data["volume"])
         await callback.message.answer(
-            f'Наклейка добавлена🗂\nНазвание: <b>{data["title"]}</b>\nОбъемы: <b>{data["volume"]}</b>')
+            f'Наклейка добавлена🗂\nНазвание: <b>{data["title"]}\nОбъемы: {data["volume"]}</b>')
         await callback.message.answer('Бот-склад📦\nГлавное меню📜', reply_markup=kb.main)
     except Exception as err:
         await callback.message.answer(f'⛔️{err}⛔️', reply_markup=kb.main)
