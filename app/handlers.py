@@ -166,6 +166,7 @@ async def callback_func_two(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('|sticker'))
 async def update_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
+    await callback.message.edit_text('-----')
     await callback.message.answer(f'Число <b>{data["number"]}</b> принято📝')
     if data['change'] == '-':
         try:
@@ -225,6 +226,7 @@ async def callback_func_two(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('ввод2'))
 async def update_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
+    await callback.message.edit_text('-----')
     await callback.message.answer(f'Число <b>{data["number"]}</b> принято📝')
     if data['change'] == '-':
         try:
@@ -278,6 +280,7 @@ async def callback_func_two(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('ввод4'))
 async def update_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
+    await callback.message.edit_text('-----')
     await callback.message.answer(f'Число <b>{data["number"]}</b> принято📝')
     if data['change'] == '-':
         try:
@@ -379,6 +382,7 @@ async def callback_func(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('ввод'))
 async def add_fourth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
+    await callback.message.edit_text('-----')
     await callback.message.answer(f'Число <b>{data["number"]}</b> принято📝')
     try:
         await rq.add_item(data["title"], data["number"])
@@ -423,6 +427,7 @@ async def callback_func(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('ввод3'))
 async def add_fifth(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
+    await callback.message.edit_text('-----')
     await callback.message.answer(f'Наклейка <b>{data["title"]}</b> принята📝')
     try:
         await rq.add_sticker(data["title"], data["volume"])
