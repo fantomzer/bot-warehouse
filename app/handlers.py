@@ -75,13 +75,13 @@ async def show_sort_alphabet(callback: CallbackQuery, state: FSMContext):
     await callback.answer('Показать наклейки')
     await callback.message.edit_text(
         '⬇️Наклейки на складе⬇️',
-        reply_markup=await kb.stickers_view('alphabet', 'остатокНак'))
+        reply_markup=await kb.stickers_view('alphabet', 'остатокНак', 'SILVER'))
 
 
 @router.callback_query(F.data.startswith('list_s'))
 async def show_sort_alphabet(callback: CallbackQuery, state: FSMContext):
     await state.clear()
-    result = (await rq.show_stickers_type('count_desc')).fetchall()
+    result = (await rq.show_all_sticker()).fetchall()
     half = len(result) // 2
     halves = result[:half], result[half:]
     table = PrettyTable()
@@ -134,10 +134,10 @@ async def number(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.endswith('остатокНак'))
 async def update_second(callback: CallbackQuery):
     await callback.answer('Сортировка')
-    type_sort = callback.data.split(':')[0]
+    type_sort, type_sticker = callback.data.split(':')[0], callback.data.split(':')[1]
     await callback.message.edit_text(
         '⬇️Наклейки на складе⬇️',
-        reply_markup=await kb.stickers_view(type_sort, 'остатокНак'))
+        reply_markup=await kb.stickers_view(type_sort, 'остатокНак', type_sticker))
 
 
 @router.callback_query(F.data.startswith('enter:'))
