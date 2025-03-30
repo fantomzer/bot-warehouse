@@ -93,28 +93,37 @@ async def items_view(type_sort, type_keyboard):
     return keyboard.adjust(1, 3, 1).as_markup()
 
 
-async def stickers_view(type_sort, type_keyboard):
-    all_items = await show_stickers_type(type_sort)
+async def stickers_view(type_sort, type_keyboard, type_sticker):
+    all_items = await show_stickers_type(type_sort, type_sticker)
     button1 = InlineKeyboardButton(text='Поиск', callback_data='поискНак')
-    button2 = InlineKeyboardButton(text='По алфавиту', callback_data=f'alphabet:{type_keyboard}')
-    button3 = InlineKeyboardButton(text='По возрастанию', callback_data=f'count:{type_keyboard}')
-    button4 = InlineKeyboardButton(text='По убыванию', callback_data=f'count_desc:{type_keyboard}')
+    button2 = InlineKeyboardButton(text='По алфавиту', callback_data=f'alphabet:{type_sticker}:{type_keyboard}')
+    button3 = InlineKeyboardButton(text='По возрастанию', callback_data=f'count:{type_sticker}:{type_keyboard}')
+    button4 = InlineKeyboardButton(text='По убыванию', callback_data=f'count_desc:{type_sticker}:{type_keyboard}')
     button5 = InlineKeyboardButton(text='Главное меню', callback_data='Назад:')
-    if type_sort == 'alphabet':
-        button2 = InlineKeyboardButton(text='✅По алфавиту', callback_data=f'alphabet:{type_keyboard}')
-    elif type_sort == 'count':
-        button3 = InlineKeyboardButton(text='✅По возрастанию', callback_data=f'count:{type_keyboard}')
-    elif type_sort == 'count_desc':
-        button4 = InlineKeyboardButton(text='✅По убыванию', callback_data=f'count_desc:{type_keyboard}')
+    button6 = InlineKeyboardButton(text='SILVER', callback_data=f'{type_sort}:SILVER:{type_keyboard}')
+    button7 = InlineKeyboardButton(text='ECO', callback_data=f'{type_sort}:ECO:{type_keyboard}')
+    button8 = InlineKeyboardButton(text='Прочее', callback_data=f'{type_sort}:other:{type_keyboard}')
+
+    if type_sticker == 'SILVER':
+        button6 = InlineKeyboardButton(text='✅SILVER', callback_data=f'{type_sort}:SILVER:{type_keyboard}')
+    elif type_sticker == 'ECO':
+        button7 = InlineKeyboardButton(text='✅ECO', callback_data=f'{type_sort}:ECO:{type_keyboard}')
+    elif type_sticker == 'other':
+        button8 = InlineKeyboardButton(text='✅Прочее', callback_data=f'{type_sort}:other:{type_keyboard}')
 
     keyboard = InlineKeyboardBuilder()
-    keyboard.add(button1, button2, button3, button4)
+    keyboard.add(button1)
+    keyboard.row(button2, button3, button4, width=3)
+    keyboard.row(button6, button7, button8, width=3)
+
     for item in all_items:
-        keyboard.add(InlineKeyboardButton(
+        keyboard.row(InlineKeyboardButton(
             text=f'{item[0]}-{item[1]}: {item[2]}',
             callback_data=f'{type_keyboard}:{item[0]}:{item[1]}:{item[2]}'))
-    keyboard.add(button1, button2, button3, button4, button5)
-    return keyboard.adjust(1, 3, 1).as_markup()
+
+    keyboard.row(button6, button7, button8, width=3)
+    keyboard.row(button5, width=1)
+    return keyboard.as_markup()
 
 
 async def choice(type_choice):
