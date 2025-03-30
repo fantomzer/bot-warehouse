@@ -1,6 +1,6 @@
 from database.models import async_session
 from database.models import User, Item, Sticker
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, or_
 
 
 async def set_user(tg_id, user_name, first_name):
@@ -133,22 +133,54 @@ async def show_all_sticker():
         )
 
 
-async def show_stickers_type(type_sort):
-    if type_sort == 'alphabet':
-        async with async_session() as session:
-            return await session.execute(
-                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
-                .order_by(Sticker.sticker_name))
-    elif type_sort == 'count':
-        async with async_session() as session:
-            return await session.execute(
-                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
-                .order_by(Sticker.sticker_ahead))
-    elif type_sort == 'count_desc':
-        async with async_session() as session:
-            return await session.execute(
-                select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
-                .order_by(Sticker.sticker_ahead.desc()))
+async def show_stickers_type(type_sort, type_sticker):
+    if type_sticker in ['SILVER', 'ECO']:
+        if type_sort == 'alphabet':
+            async with async_session() as session:
+                return await session.execute(
+                    select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
+                    .where(Sticker.sticker_name.like(f'{type_sticker}%'))
+                    .order_by(Sticker.sticker_name))
+        elif type_sort == 'count':
+            async with async_session() as session:
+                return await session.execute(
+                    select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
+                    .where(Sticker.sticker_name.like(f'{type_sticker}%'))
+                    .order_by(Sticker.sticker_ahead))
+        elif type_sort == 'count_desc':
+            async with async_session() as session:
+                return await session.execute(
+                    select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
+                    .where(Sticker.sticker_name.like(f'{type_sticker}%'))
+                    .order_by(Sticker.sticker_ahead.desc()))
+    else:
+        if type_sort == 'alphabet':
+            async with async_session() as session:
+                return await session.execute(
+                    select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
+                    .where(Sticker.sticker_name.not_in(
+                        select(Sticker.sticker_name)
+                        .where(or_(Sticker.sticker_name.like('SILVER%'), Sticker.sticker_name.like('ECO%')))
+                        ))
+                    .order_by(Sticker.sticker_name))
+        elif type_sort == 'count':
+            async with async_session() as session:
+                return await session.execute(
+                    select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
+                    .where(Sticker.sticker_name.not_in(
+                        select(Sticker.sticker_name)
+                        .where(or_(Sticker.sticker_name.like('SILVER%'), Sticker.sticker_name.like('ECO%')))
+                    ))
+                    .order_by(Sticker.sticker_ahead))
+        elif type_sort == 'count_desc':
+            async with async_session() as session:
+                return await session.execute(
+                    select(Sticker.sticker_name, Sticker.sticker_volume, Sticker.sticker_ahead)
+                    .where(Sticker.sticker_name.not_in(
+                        select(Sticker.sticker_name)
+                        .where(or_(Sticker.sticker_name.like('SILVER%'), Sticker.sticker_name.like('ECO%')))
+                    ))
+                    .order_by(Sticker.sticker_ahead.desc()))
 
 
 async def calculate_str(user_id, number):
